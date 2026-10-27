@@ -70,7 +70,7 @@ We bypassed the legacy Bozorth stack entirely by building a dedicated, standalon
 Clone the repository and run the automated installer:
 
 ```bash
-git clone https://github.com/your-username/elan-0903-fingerprint-linux.git
+git clone https://github.com/sarvasva-dev/elan-0903-fingerprint-linux.git
 cd elan-0903-fingerprint-linux
 sudo bash install.sh
 ```
