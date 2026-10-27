@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Fingerprint Settings
+GenericName=Biometric Settings
+Comment=Add, test, and remove fingerprints for ASUS Vivobook
+Exec=/usr/bin/python3 /opt/elan_fingerprint/elan_gui.py
+Icon=fingerprint
+Terminal=false
+Type=Application
+Categories=Settings;HardwareSettings;Security;
+Keywords=fingerprint;biometrics;elan;settings;security;
+StartupNotify=true
