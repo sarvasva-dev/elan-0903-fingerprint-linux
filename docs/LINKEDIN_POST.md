@@ -52,7 +52,7 @@ To top it off, I built a native GNOME management app with Libadwaita so users ca
 
 I’m thrilled to open-source this project for the Linux community! If you have an ASUS Vivobook or any laptop with an Elan 04F3:0903 sensor, you can now enjoy 100% working biometric login on Linux.
 
-🔗 GitHub Repository: [Link in Comments]
+🔗 GitHub Repository: https://github.com/sarvasva-dev/elan-0903-fingerprint-linux
 
 A huge shoutout to open-source reverse engineering communities like morluto/rea and libfprint contributors for their foundational research.
 
@@ -91,7 +91,7 @@ The result?
 Best of all? It’s completely OPEN-SOURCE! 🌍
 
 Check out the architecture blueprint and terminal demo below.
-Repo link in the comments! 💻
+Repo: https://github.com/sarvasva-dev/elan-0903-fingerprint-linux 💻
 
 #Linux #Engineering #ReverseEngineering #Python #OpenCV #Ubuntu #BuildInPublic #TechInnovation
 ```
