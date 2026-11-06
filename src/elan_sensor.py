@@ -14,7 +14,7 @@ import cv2
 
 VID = 0x04F3
 PID = 0x0903
-LOCK_FILE = "/var/lib/elan_fingerprint/sensor.lock"
+LOCK_FILE = "/tmp/elan_sensor.lock"
 
 # USB Endpoints (Hardware verified)
 EP_CMD_OUT = 0x01  # Bulk OUT (commands)
