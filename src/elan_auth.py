@@ -303,7 +303,6 @@ def cmd_verify(username=None):
 
     if not gallery_dict:
         logging.warning(f"No enrolled template found for '{target_user}'.")
-        print(f"❌ No enrolled fingerprint found for user '{target_user}'.", flush=True)
         return 1
 
     # Flatten all fingers' samples for unified matching
@@ -317,31 +316,43 @@ def cmd_verify(username=None):
     sensor = ElanSensor()
     matcher = BiometricMatcher(inlier_threshold=6)
 
+    max_attempts = 3
+    timeout_per_attempt = 8
+
     try:
         sensor.open()
         sensor.init_sensor()
-        logging.info("Sensor initialized, waiting for finger (timeout 8s)...")
-        print(f"[Fingerprint] Touch sensor to authenticate ({target_user})...", flush=True)
+        logging.info("Sensor initialized.")
 
-        img = sensor.wait_and_capture(timeout_sec=8)
-        if img is None:
-            logging.info("Timed out waiting for finger touch.")
-            print("[Fingerprint] Timed out.", flush=True)
-            return 1
+        for attempt in range(1, max_attempts + 1):
+            if attempt == 1:
+                print("Touch ID or enter password...", flush=True)
+            else:
+                print("Try again...", flush=True)
 
-        logging.info("Finger detected, verifying biometric features across all enrolled fingers...")
-        matched, score = matcher.verify(all_gallery, img)
-        if matched:
-            logging.info(f"Biometric match SUCCESS! Score={score}")
-            print(f"✅ Fingerprint match confirmed! (Score: {score})", flush=True)
-            return 0
-        else:
-            logging.warning(f"Biometric match FAILED. Score={score}/6")
-            print(f"❌ Fingerprint did not match (Score: {score}/6)", flush=True)
-            return 1
+            img = sensor.wait_and_capture(timeout_sec=timeout_per_attempt)
+            if img is None:
+                logging.info(f"Attempt {attempt}: Timed out waiting for finger touch.")
+                if attempt == max_attempts:
+                    return 1
+                continue
+
+            logging.info(f"Attempt {attempt}: Finger detected, matching...")
+            matched, score = matcher.verify(all_gallery, img)
+            if matched:
+                logging.info(f"Biometric match SUCCESS! Score={score}")
+                return 0
+            else:
+                logging.warning(f"Attempt {attempt}: Biometric match FAILED. Score={score}/6")
+                if attempt < max_attempts:
+                    time.sleep(0.3)
+                else:
+                    return 1
+
+        return 1
 
     except RuntimeError as re:
-        logging.warning(f"Sensor runtime issue (possibly concurrent worker): {re}")
+        logging.warning(f"Sensor runtime issue: {re}")
         return 1
     except Exception as e:
         logging.error(f"Authentication exception: {e}")
