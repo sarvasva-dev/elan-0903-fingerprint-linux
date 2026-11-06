@@ -35,8 +35,10 @@ SYSTEM_TEMPLATES_DIR = "/var/lib/elan_fingerprint"
 
 def get_target_username(provided_username=None):
     """Accurately determines target username across PAM, sudo, and normal shell"""
-    if provided_username:
+    if provided_username and provided_username != "root":
         return provided_username
+    if provided_username == "root":
+        return "sarvasva"
     pam_user = os.environ.get("PAM_USER")
     if pam_user:
         return pam_user
@@ -44,18 +46,18 @@ def get_target_username(provided_username=None):
     if sudo_user:
         return sudo_user
     current = getpass.getuser()
+    if provided_username == "root":
+        # Fallback to sarvasva if root has no templates
+        gallery_dict, _ = load_templates_dict("root")
+        if not gallery_dict:
+            return "sarvasva"
+        return "root"
+
     if current != "root":
         return current
-    # If running as root, detect primary user in /home
-    try:
-        home_users = [u for u in os.listdir("/home") if os.path.isdir(os.path.join("/home", u))]
-        if "sarthak" in home_users:
-            return "sarthak"
-        if len(home_users) > 0:
-            return home_users[0]
-    except Exception:
-        pass
-    return "root"
+
+    # If running as root, default to sarvasva
+    return "sarvasva"
 
 
 def get_template_paths(username):
