@@ -343,6 +343,12 @@ def cmd_verify(username=None):
             matched, score = matcher.verify(all_gallery, img)
             if matched:
                 logging.info(f"Biometric match SUCCESS! Score={score}")
+                # Auto dismiss lockscreen via D-Bus / loginctl
+                try:
+                    import subprocess
+                    subprocess.Popen(['/home/sarvasva/.local/bin/elan-unlock-helper'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                except Exception:
+                    pass
                 return 0
             else:
                 logging.warning(f"Attempt {attempt}: Biometric match FAILED. Score={score}/6")
