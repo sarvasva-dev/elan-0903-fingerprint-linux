@@ -21,6 +21,8 @@ Seamlessly brings **passwordless `sudo`**, **GNOME Lock Screen unlock**, **Polki
 
 ## 🔍 The Problem: Why Upstream Linux Failed
 
+![Problem vs Solution](docs/3_problem_vs_solution.png)
+
 For years, users of ASUS laptops with the Elan `04f3:0903` capacitive fingerprint sensor faced constant failures on Linux:
 
 ```text
@@ -85,6 +87,8 @@ The installer automatically:
 ---
 
 ## 🛠️ CLI Usage
+
+![Terminal Demo Card](docs/2_terminal_demo_card.png)
 
 ### 1. Register a Fingerprint
 ```bash

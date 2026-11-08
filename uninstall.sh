@@ -12,6 +12,7 @@ fi
 
 echo "=== 1. Removing PAM Integration ==="
 sed -i '/elan-fingerprint/d' /etc/pam.d/common-auth 2>/dev/null || true
+sed -i '/elan-fingerprint/d' /etc/pam.d/sudo 2>/dev/null || true
 rm -f /usr/share/pam-configs/elan-fingerprint 2>/dev/null || true
 
 echo "=== 2. Removing udev Rules ==="

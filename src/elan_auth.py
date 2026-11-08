@@ -34,30 +34,48 @@ SYSTEM_TEMPLATES_DIR = "/var/lib/elan_fingerprint"
 
 
 def get_target_username(provided_username=None):
-    """Accurately determines target username across PAM, sudo, and normal shell"""
+    """Accurately determines target username across PAM, sudo, and normal shell without hardcoding"""
     if provided_username and provided_username != "root":
         return provided_username
-    if provided_username == "root":
-        return "sarvasva"
-    pam_user = os.environ.get("PAM_USER")
-    if pam_user:
-        return pam_user
-    sudo_user = os.environ.get("SUDO_USER")
-    if sudo_user:
-        return sudo_user
-    current = getpass.getuser()
-    if provided_username == "root":
-        # Fallback to sarvasva if root has no templates
-        gallery_dict, _ = load_templates_dict("root")
-        if not gallery_dict:
-            return "sarvasva"
-        return "root"
 
+    pam_user = os.environ.get("PAM_USER")
+    if pam_user and pam_user != "root":
+        return pam_user
+
+    sudo_user = os.environ.get("SUDO_USER")
+    if sudo_user and sudo_user != "root":
+        return sudo_user
+
+    current = getpass.getuser()
     if current != "root":
         return current
 
-    # If running as root, default to sarvasva
-    return "sarvasva"
+    # If running as root or authenticating for root (e.g. sudo),
+    # dynamically find the primary enrolled user template
+    if os.path.isdir(SYSTEM_TEMPLATES_DIR):
+        enrolled = [
+            f[:-4] for f in os.listdir(SYSTEM_TEMPLATES_DIR)
+            if f.endswith(".pkl") and f != "root.pkl"
+        ]
+        if enrolled:
+            for preferred in (sudo_user, pam_user):
+                if preferred in enrolled:
+                    return preferred
+            return enrolled[0]
+
+    # Fallback: inspect regular user directories in /home
+    if os.path.isdir("/home"):
+        try:
+            users = [
+                u for u in os.listdir("/home")
+                if not u.startswith(".") and os.path.isdir(os.path.join("/home", u))
+            ]
+            if users:
+                return users[0]
+        except Exception:
+            pass
+
+    return "root"
 
 
 def get_template_paths(username):
@@ -346,7 +364,17 @@ def cmd_verify(username=None):
                 # Auto dismiss lockscreen via D-Bus / loginctl
                 try:
                     import subprocess
-                    subprocess.Popen(['/home/sarvasva/.local/bin/elan-unlock-helper'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    target_user = get_target_username(username)
+                    user_home = os.path.expanduser(f"~{target_user}")
+                    candidate_helpers = [
+                        "/usr/local/bin/elan-unlock-helper",
+                        os.path.join(user_home, ".local/bin/elan-unlock-helper"),
+                        "/opt/elan_fingerprint/elan-unlock-helper"
+                    ]
+                    for helper in candidate_helpers:
+                        if os.path.isfile(helper) and os.access(helper, os.X_OK):
+                            subprocess.Popen([helper], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                            break
                 except Exception:
                     pass
                 return 0
@@ -378,7 +406,7 @@ def main():
         sys.exit(cmd_test())
     elif action in ("enroll", "add"):
         # Support: elan-fingerprint add "Right Thumb"
-        # Support: elan-fingerprint enroll sarthak
+        # Support: elan-fingerprint enroll <username>
         if arg2 and not arg2.startswith("-"):
             if arg2 in os.listdir("/home"):
                 sys.exit(cmd_enroll(username=arg2, finger_name=arg3))

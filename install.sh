@@ -29,6 +29,12 @@ mkdir -p "$TARGET_DIR"
 cp -f "$SCRIPT_DIR/src/"*.py "$TARGET_DIR/"
 chmod 755 "$TARGET_DIR"/*.py
 
+echo "=== 3.5. Verifying System Prerequisites ==="
+if command -v apt-get &> /dev/null; then
+    apt-get update -y -qq 2>/dev/null || true
+    apt-get install -y -qq python3-venv python3-pip libusb-1.0-0-dev 2>/dev/null || true
+fi
+
 echo "=== 4. Setting Up Isolated Python Runtime in $TARGET_DIR ==="
 # Check if python3-venv or uv is available
 if command -v uv &> /dev/null; then
